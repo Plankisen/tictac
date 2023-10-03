@@ -13,13 +13,17 @@ datasource db {
 model User {
   id       Int      @id @default(autoincrement())
   name     String   @unique
-  password String
+  salt     String
+  hash     String
   messages Message[]
+  sessions Session[]
 }
 
 model Session {
   id       Int      @id @default(autoincrement())
   sessionName String @unique
+  creatorId   Int?     
+  creator     User?    @relation(fields: [creatorId], references: [id])
   messages Message[]
 }
 

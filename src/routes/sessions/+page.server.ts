@@ -14,18 +14,27 @@ export const load = (async () => {
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
-    create: async ({ request }) => {
+    create: async ({ request, cookies }) => {
         let data = await request.formData();
         let sessionName = data.get("sessionName")?.toString();
         if (!sessionName) {
             return fail(400, { sessionName: "Please supply a name" });
         }
 
+        let username = cookies.get("username") || "Guest";
+        const prismaUser = await prisma.user.findUnique({ where: { name: username } });
+        const userId = prismaUser?.id;
+
         try {
             // Skapa en ny session med Prisma och spara sessionName
             const createdSession = await prisma.session.create({
                 data: {
                     sessionName,
+                    creator: {
+                        connect: {
+                            id: userId
+                        }
+                    },
                     messages: { create: [] }, // Skapa en tom lista med meddelanden för den nya sessionen
                 },
             });

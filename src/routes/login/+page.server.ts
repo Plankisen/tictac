@@ -1,6 +1,7 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { PrismaClient } from '@prisma/client';
+import * as crypto from "crypto";
 
 const prisma = new PrismaClient();
 
@@ -32,14 +33,20 @@ export const actions: Actions = {
       const existingUser = await prisma.user.findUnique({ where: { name: username } });
 
       if (existingUser) {
-        //return fail(400, { username: 'User already logged in' });
-        if (password == existingUser.password){
-          cookies.set('username', username)
-          throw redirect(307, '/');
-        }
+        if (validatePassword(password, existingUser.salt, existingUser.hash)) {
+          cookies.set("username", username, { secure: false });
+          throw redirect(307, "/"); // login
+}
       }
       else {
-        await prisma.user.create({ data: { name: username, password: password } });
+        const { salt, hash } = hashPassword(password);
+        await prisma.user.create({
+          data: {
+            name: username,
+            salt: salt,
+            hash: hash,
+          },
+        });
         cookies.set('username', username);
         throw redirect(307, '/');
       }
@@ -56,3 +63,14 @@ export const actions: Actions = {
     cookies.delete('username');
   },
 };
+
+function hashPassword(password : crypto.BinaryLike) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
+  return { salt, hash };
+}
+
+function validatePassword(inputPassword : crypto.BinaryLike, storedSalt : crypto.BinaryLike, storedHash : string) {
+  const hash = crypto.pbkdf2Sync(inputPassword, storedSalt, 1000, 64, 'sha512').toString('hex');
+  return storedHash === hash;
+}
