@@ -11,7 +11,7 @@
 <h1>Session</h1>
 
 <ul>
-    {#each sessions as [session, messages]}
+    {#each sessions as session}
         <li><a href="/sessions/{session}">{session}</a></li>
     {/each}
 

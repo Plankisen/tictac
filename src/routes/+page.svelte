@@ -9,7 +9,7 @@
 </div>
 
 <nav>
-    <a href="/sessions"></a>
+    <a href="/sessions">Sessions</a>
 </nav>
 
 <style>

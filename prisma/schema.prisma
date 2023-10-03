@@ -6,12 +6,28 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgres"
   url      = env("DATABASE_URL")
 }
 
-model user {
-  id Int @id @default(autoincrement())
-  name String @unique
+model User {
+  id       Int      @id @default(autoincrement())
+  name     String   @unique
   password String
+  messages Message[]
+}
+
+model Session {
+  id       Int      @id @default(autoincrement())
+  sessionName String @unique
+  messages Message[]
+}
+
+model Message {
+  id        Int     @id @default(autoincrement())
+  message   String
+  sender    User    @relation(fields: [senderId], references: [id])
+  senderId  Int
+  session   Session @relation(fields: [sessionId], references: [id])
+  sessionId Int
 }

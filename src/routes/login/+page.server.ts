@@ -4,6 +4,15 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+prisma.$connect()
+  .then(() => {
+    console.log('Prisma client connected to the database.');
+  })
+  .catch((error) => {
+    console.error('Prisma client failed to connect to the database:', error);
+  });
+
+
 export const load: PageServerLoad = async ({ cookies }) => {
   const username = cookies.get('username');
   const password = cookies.get('password')
