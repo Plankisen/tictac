@@ -6,8 +6,7 @@ const prisma = new PrismaClient();
 
 export const load: PageServerLoad = async ({ params }) => {
     let session = params.session;
-
-
+    
     // Använd Prisma för att hämta sessionen och dess meddelanden
     const sessionData = await prisma.session.findUnique({
         where: {

@@ -23,9 +23,9 @@
 <h1> New session </h1>
 
 <form action="?/create" method="post" use:enhance>
-    <input type="text" name="sessionName"> 
+    <input type="text" name="sessionName" placeholder="Name" class="bg-black"> 
     <button>create</button>
     {#if form?.sessionName}
-        <span>form.sessionName</span>
+        <span>{form.sessionName}</span>
     {/if}
 </form>
