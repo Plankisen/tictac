@@ -35,8 +35,14 @@ export const actions: Actions = {
       if (existingUser) {
         if (validatePassword(password, existingUser.salt, existingUser.hash)) {
           cookies.set("username", username, { secure: false });
-          throw redirect(307, "/"); // login
-}
+          const token = await prisma.token.create({
+            data: { userId: existingUser.id },
+          });
+          cookies.set("token_id", token.id, { secure: false });
+          throw redirect(307, "/");
+          
+        }
+
       }
       else {
         const { salt, hash } = hashPassword(password);
@@ -47,6 +53,10 @@ export const actions: Actions = {
             hash: hash,
           },
         });
+        let token_id = cookies.get("token_id");
+        if (token_id) {
+          throw redirect(303, "/");
+        }
         cookies.set('username', username);
         throw redirect(307, '/');
       }
@@ -61,6 +71,12 @@ export const actions: Actions = {
       return fail(400, { username: 'No username detected' });
     }
     cookies.delete('username');
+    let token = cookies.get("token_id");
+    cookies.delete("token_id");
+    await prisma.token.delete({ where: { id: token } });
+    if (!token) {
+      throw redirect(307, "/login"); // login
+    }
   },
 };
 
